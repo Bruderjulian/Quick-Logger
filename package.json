@@ -1,0 +1,23 @@
+{
+  "name": "quick-logger",
+  "version": "1.0.0",
+  "description": "An awesome opinioned easy-to-use logger",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "logger",
+    "logging",
+    "debug",
+    "log",
+    "log",
+    "formatter"
+  ],
+  "author": "BruderJulian",
+  "license": "MIT",
+  "dependencies": {
+    "time-stamp": "^2.2.0"
+  }
+}
