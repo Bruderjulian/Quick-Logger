@@ -1,4 +1,4 @@
-const Transporter = require("./transporter.js");
+const Transporter = require("../src/Transporter.js");
 
 const methodMap = {
   0: () => {},

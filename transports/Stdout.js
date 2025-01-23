@@ -1,4 +1,4 @@
-const Transporter = require("./transporter.js");
+const Transporter = require("../src/Transporter.js");
 const process = require("process");
 
 class StdoutTransporter extends Transporter {

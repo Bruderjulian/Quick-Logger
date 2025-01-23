@@ -1,8 +1,8 @@
-const { createWriteStream, lstatSync, openSync } = require("fs");
-const Transporter = require("./transporter.js");
+const { createWriteStream, lstatSync } = require("fs");
 const { join } = require("path");
 const timestamp = require("time-stamp");
-const { LogFileFormats, LogLevels } = require("../src/constants.js");
+const { LogFileFormats, toLevelValue } = require("../src/utils.js");
+const Transporter = require("../src/Transporter.js");
 
 class FileTransporter extends Transporter {
   #stream;
@@ -11,10 +11,9 @@ class FileTransporter extends Transporter {
   constructor(opts) {
     super();
     if (typeof opts.path !== "string") throw new TypeError("Invalid Path");
-    if (!LogFileFormats.isFormat(opts.format)) throw new SyntaxError("Invalid File Logging Format");
-    if (LogLevels.isLevel(opts.loglevel)) {
-      this.#level = opts.loglevel;
-    } else if (opts.loglevel) throw new SyntaxError("Invalid Log Level");
+    if (!Object.values(LogFileFormats).includes(opts.format))
+      throw new SyntaxError("Invalid File Logging Format");
+    if (opts.loglevel) this.#level = toLevelValue(opts.loglevel);
     let path = opts.path;
     let fmt = opts.format;
 
@@ -32,8 +31,7 @@ class FileTransporter extends Transporter {
     if (isFolder(path)) {
       if (fmt.charAt(1) === "d") path = join(path, timestamp(opts.dateFormat));
       if (fmt.charAt(1) === "i") path = join(path, this.#id++);
-    }
-    else path = path + "-" + timestamp(opts.dateFormat);
+    } else path = path + "-" + timestamp(opts.dateFormat);
     this.#stream = createWriteStream(path, {
       encoding: "utf8",
       autoClose: true,

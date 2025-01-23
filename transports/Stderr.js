@@ -1,5 +1,4 @@
-const { LogLevels } = require("../src/constants.js");
-const Transporter = require("./transporter.js");
+const Transporter = require("../src/Transporter.js");
 const process = require("process");
 
 class StderrTransporter extends Transporter {
@@ -7,7 +6,7 @@ class StderrTransporter extends Transporter {
     super();
   }
   write(text, level) {
-    if (level < LogLevels.error) return;
+    if (level < 5) return;
     process.stderr.write(text);
   }
 }

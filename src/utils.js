@@ -1,23 +1,55 @@
-const Transporter = require("../transports/transporter.js");
+class LogLevels {
+  static silent = 0;
+  static trace = 1;
+  static debug = 2;
+  static info = 3;
+  static warn = 4;
+  static error = 5;
+  static fatal = 6;
+}
 
+class LogFileFormats {
+  static createNew = "nd";
+  static createWithDate = "nd";
+  static createWithId = "ni";
+  static reuse = "ra";
+  static clearedReuse = "rw";
+}
+
+const levelMap = {
+  0: "silent",
+  1: "trace",
+  2: "debug",
+  3: "info",
+  4: "warn",
+  5: "error",
+  6: "fatal",
+};
+
+const conversionMap = {
+  nd: "createNew",
+  nd: "createWithDate",
+  ni: "createWithId",
+  ra: "reuse",
+  rw: "clearedReuse",
+  ...levelMap,
+};
+
+const has = Object.hasOwn;
 function isObject(obj) {
   return typeof obj === "object" && !Array.isArray(obj) && obj !== null;
 }
 
-function validTransport(transport) {
-  return isObject(transport) && typeof transport.cls === "function" && transport.cls.toString().includes("extends Transporter");
+function toLevelName(v) {
+  if (has(levelMap, v)) return levelMap[v];
+  if (has(LogLevels, v)) return v;
+  throw new SyntaxError("Invalid Log Level");
 }
 
-function extractTransports(arr, defaultOps) {
-  if (typeof arr === "undefined") return [];
-  if (typeof arr === "string") arr = Transporter.load(arr);
-  if (validTransport(arr)) arr = [arr];
-  if (!Array.isArray(arr) || !arr.every((v)=> validTransport(v))) {
-    throw new SyntaxError("Invalid Transport Creator at Extraction");
-  }
-  return arr.map((v) => {
-    return new v.cls({...defaultOps, ...v.opts});
-  })
+function toLevelValue(v) {
+  if (has(LogLevels, v)) return LogLevels[v];
+  if (has(levelMap, v)) return v;
+  throw new SyntaxError("Invalid Log Level");
 }
 
 class LogError extends Error {
@@ -27,4 +59,13 @@ class LogError extends Error {
   }
 }
 
-module.exports = { isObject, extractTransports, LogError };
+module.exports = {
+  isObject,
+  toLevelName,
+  toLevelValue,
+  has,
+  LogLevels,
+  LogFileFormats,
+  LogError,
+  conversionMap,
+};

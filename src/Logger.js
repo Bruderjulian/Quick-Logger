@@ -1,6 +1,12 @@
 const timestamp = require("time-stamp").utc;
-const { LogLevels } = require("./constants.js");
-const { isObject, extractTransports, LogError } = require("./utils.js");
+const {
+  isObject,
+  toLevelName,
+  toLevelValue,
+  LogLevels,
+  LogError,
+} = require("./utils.js");
+const Transporter = require("./Transporter.js");
 
 class Logger {
   #namespace = "";
@@ -11,19 +17,19 @@ class Logger {
   #throwAtError = false;
 
   constructor(opts) {
+    if (typeof opts === "undefined") return;
     if (typeof opts === "string") opts = { name: opts };
     if (!isObject(opts)) throw new TypeError("Invalid Option Type");
-    if (typeof opts.name === "string" && opts.name.length > 0) {
-      this.#namespace = " " + opts.name;
-    }
     if (typeof opts.namespace === "string" && opts.namespace.length > 0) {
       this.#namespace = " " + opts.namespace;
     }
-    if (opts.loglevel) {
-      opts.loglevel = LogLevels.toLevel(opts.loglevel);
-      if (LogLevels.isLevel(opts.loglevel)) this.#loglevel = opts.loglevel;
+    if (typeof opts.name === "string" && opts.name.length > 0) {
+      this.#namespace = " " + opts.name;
     }
-    if (opts.dateFormat) {
+    if (opts.loglevel) {
+      this.#loglevel = toLevelValue(opts.loglevel);
+    }
+    if (typeof opts.dateFormat === "string") {
       this.#dateFormat = opts.dateFormat;
     }
     if (typeof opts.formatter === "function") {
@@ -35,6 +41,28 @@ class Logger {
     this.#transports = extractTransports(opts.transports, {
       dateFormat: this.#dateFormat,
     });
+  }
+
+  static getLogger(opts) {
+    return new Logger(opts);
+  }
+
+  static createLogger(opts) {
+    return new Logger(opts);
+  }
+
+  child(opts) {
+    var mergedOpts = {
+      namespace: opts.namespace ?? opts.name ?? this.#namespace,
+      loglevel: opts.loglevel ?? this.#loglevel,
+      dateFormat: opts.dateFormat ?? this.#dateFormat,
+      throwAtError: opts.throwAtError ?? this.#throwAtError,
+      formatter: opts.formatter ?? this.#formatter,
+      transports: opts.transports
+        ? extractTransports(opts.transports)
+        : this.#transports,
+    };
+    return new Logger(mergedOpts);
   }
 
   log(...message) {
@@ -62,19 +90,22 @@ class Logger {
   }
 
   #createLog(level, message) {
-    if (level < this.#loglevel) return;
+    if (
+      level < this.#loglevel ||
+      (this.#throwAtError && level < LogLevels.error) ||
+      this.#transports.length === 0
+    ) {
+      return;
+    }
     message = message.join(" ");
     var date = timestamp(this.#dateFormat);
     var text = this.#formatter(
       message,
-      LogLevels.toName(level),
+      toLevelName(level),
       date,
       this.#namespace
     );
-    if (
-      level === LogLevels.fatal ||
-      (this.#throwAtError && level === LogLevels.error)
-    ) {
+    if (this.#throwAtError && level >= LogLevels.error) {
       throw new LogError(text);
     }
     for (let i = 0, len = this.#transports.length; i < len; i++) {
@@ -85,6 +116,27 @@ class Logger {
   #defaultFormatter(message, level, timestamp, namespace) {
     return `[${timestamp}] [${level.toUpperCase()}]${namespace} - ${message}`;
   }
+}
+
+function validTransport(transport) {
+  return (
+    transport instanceof Transporter ||
+    (isObject(transport) &&
+      typeof transport.cls === "function" &&
+      transport.cls.toString().includes("extends Transporter"))
+  );
+}
+
+function extractTransports(arr, defaultOpts) {
+  if (typeof arr === "undefined") return [];
+  else if (typeof arr === "string") arr = [Transporter.load(arr)];
+  else if (validTransport(arr)) arr = [arr];
+  if (!Array.isArray(arr)) throw new SyntaxError("Invalid Transport Creator");
+  return arr.map((v) => {
+    if (v instanceof Transporter) return v;
+    if (!validTransport(v)) throw new SyntaxError("Invalid Transport Creator");
+    return new v.cls({ ...defaultOpts, ...v.opts });
+  });
 }
 
 module.exports = Logger;
