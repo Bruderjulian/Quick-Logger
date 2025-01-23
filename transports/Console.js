@@ -1,4 +1,5 @@
 const Transporter = require("../src/Transporter.js");
+const { isObject } = require("../src/utils.js");
 
 const methodMap = {
   0: () => {},
@@ -16,6 +17,7 @@ class ConsoleTransporter extends Transporter {
   #useMethods = false;
   constructor(opts) {
     super();
+    if (!isObject(opts)) throw new SyntaxError("Invalid Options");
     if (typeof opts.useMethods === "boolean") {
       this.#useMethods = opts.useMethods;
     }

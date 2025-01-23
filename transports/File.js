@@ -1,7 +1,7 @@
 const { createWriteStream, lstatSync } = require("fs");
 const { join } = require("path");
 const timestamp = require("time-stamp");
-const { LogFileFormats, toLevelValue } = require("../src/utils.js");
+const { LogFileFormats, toLevelValue, isObject } = require("../src/utils.js");
 const Transporter = require("../src/Transporter.js");
 
 class FileTransporter extends Transporter {
@@ -10,6 +10,7 @@ class FileTransporter extends Transporter {
   #level = 0;
   constructor(opts) {
     super();
+    if (!isObject(opts)) throw new SyntaxError("Invalid Options");
     if (typeof opts.path !== "string") throw new TypeError("Invalid Path");
     if (!Object.values(LogFileFormats).includes(opts.format))
       throw new SyntaxError("Invalid File Logging Format");
