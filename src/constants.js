@@ -28,4 +28,16 @@ class LogLevels {
   }
 }
 
-module.exports = { LogLevels };
+const LogFileFormats = {
+  createNew: "nd",
+  createWithDate: "nd",
+  createWithId: "ni",
+  reuse: "ra",
+  clearedReuse: "rw",
+
+  isFormat: function (fmt) {
+    return Object.values(this).includes(fmt);
+  }
+}
+
+module.exports = { LogLevels, LogFileFormats };
