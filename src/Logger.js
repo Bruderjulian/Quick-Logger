@@ -26,6 +26,7 @@ class Logger {
     if (typeof opts.name === "string" && opts.name.length > 0) {
       this.#namespace = " " + opts.name;
     }
+    opts.loglevel = opts.loglevel ?? opts.logLevel ?? opts.LogLevel;
     if (opts.loglevel) {
       this.#loglevel = toLevelValue(opts.loglevel);
     }
@@ -51,7 +52,20 @@ class Logger {
     return new Logger(opts);
   }
 
-  child(opts) {
+  static from(instance, opts) {
+    if (!(instance instanceof Logger))
+      throw new SyntaxError("Invalid Instance to clone from");
+    return instance.derive(opts);
+  }
+
+  clone() {
+    return new Logger(this);
+  }
+
+  derive(opts) {
+    if (typeof opts === "undefined") return new Logger(this);
+    if (typeof opts === "string") opts = { name: opts };
+    if (!isObject(opts)) throw new TypeError("Invalid Options Type");
     var mergedOpts = {
       namespace: opts.namespace ?? opts.name ?? this.#namespace,
       loglevel: opts.loglevel ?? this.#loglevel,
@@ -63,6 +77,10 @@ class Logger {
         : this.#transports,
     };
     return new Logger(mergedOpts);
+  }
+
+  child(opts) {
+    return this.derive(opts);
   }
 
   log(...message) {

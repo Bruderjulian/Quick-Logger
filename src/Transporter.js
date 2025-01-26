@@ -5,11 +5,9 @@ class Transporter {
     if (typeof name !== "string" && name.length < 3) {
       throw new SyntaxError("Invalid Transporter Name");
     }
-    const fn = function TransportCreator(opts) {
+    return (Transporter[name] = function (opts) {
       return { cls, opts };
-    };
-    Transporter[name] = fn;
-    return fn;
+    });
   }
   static load(name) {
     if (!has(Transporter, name)) {

@@ -1,23 +1,44 @@
 {
   "name": "quick-logger",
   "version": "1.0.0",
-  "description": "An awesome opinioned easy-to-use logger",
+  "description": "An awesome opinionated easy-to-use lightweight logger",
   "main": "index.js",
-  "type": "commonjs",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "license": "MIT",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "src/*",
+    "transports/*"
+  ],
   "keywords": [
     "logger",
     "logging",
+    "log",
     "debug",
-    "log",
-    "log",
-    "formatter"
+    "formatter",
+    "node-logger",
+    "node-logging",
+    "winston",
+    "bunyan",
+    "log4-node-js",
+    "log4js"
   ],
-  "author": "BruderJulian",
-  "license": "MIT",
+  "author": {
+    "name": "BruderJulian",
+    "url": "https://github.com/Bruderjulian"
+  },
+  "homepage": "https://github.com/Bruderjulian/Quick-Logger",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bruderjulian/Quick-Logger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Bruderjulian/Quick-Logger/issues"
+  },
   "dependencies": {
     "time-stamp": "^2.2.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

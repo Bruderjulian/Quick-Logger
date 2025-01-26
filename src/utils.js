@@ -35,7 +35,7 @@ const conversionMap = {
   ...levelMap,
 };
 
-const has = Object.hasOwn;
+const has = Object.hasOwn || Object.call.bind(Object.hasOwnProperty);
 function isObject(obj) {
   return typeof obj === "object" && !Array.isArray(obj) && obj !== null;
 }
