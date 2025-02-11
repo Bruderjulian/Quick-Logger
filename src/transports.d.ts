@@ -7,10 +7,10 @@ declare class Transport {
 
   constructor(opts?: Transport.TransportOptions);
 
-  public log(info: any, next: () => void): any;
-  public log(info: any): any;
-  public open?(): void;
-  public close?(): void;
+  public _write(info: any, next: () => void): any;
+  public _write(info: any): any;
+  public _open?(): void;
+  public _close?(): void;
 
   public static create(name: string, cls: Transport): Transport;
   public static load(name: string): Transport;
@@ -24,10 +24,10 @@ declare namespace Transport {
     handleExceptions?: boolean;
     handleRejections?: boolean;
 
-    log(info: any, next: () => void): any;
-    log(info: any): any;
-    open?(callback?): void;
-    close?(callback?): void;
+    _write(info: any, next: () => void): any;
+    _write(info: any): any;
+    _open?(callback?): void;
+    _close?(callback?): void;
   }
 }
 

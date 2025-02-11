@@ -20,7 +20,7 @@ class Transport {
     if (!isObject(options)) {
       throw new SyntaxError("Invalid Options Object");
     }
-    if (validString(name)) this.name = name;
+    if (validString(name, "name")) this.name = name;
     if (validBool(options.level, "level")) this.level = options.level;
     if (validBool(options.silent, "silent")) this.silent = options.silent;
     if (validBool(options.handleExceptions, "handleExceptions")) {
@@ -29,6 +29,8 @@ class Transport {
     if (validBool(options.handleRejections, "handleRejections")) {
       this.handleRejections = options.handleRejections;
     }
+    if (validBool(options.autoOpen, "autoOpen"))
+      this.autoOpen = options.autoOpen;
 
     if (validFunc(options.format, "format")) this.format = options.format;
     if (validFunc(options.log, "log")) this.log = options.log;
@@ -38,7 +40,7 @@ class Transport {
     this.once("pipe", (logger) => {
       this.levels = logger.levels;
       this.parent = logger;
-      if (logger.autoOpen) this.open();
+      if (this.autoOpen) this.open();
     });
     this.once("unpipe", (src) => {
       if (src === this.parent) return;
@@ -75,7 +77,11 @@ class Transport {
       return callback(null);
     }
 
-    if (!this.format) return this.log(info, callback);
+    if (!this.format) {
+      this.log(info, callback);
+      if (typeof callback === "function") callback.call(null);
+      return;
+    }
     let errState;
     let transformed;
     try {
@@ -84,11 +90,12 @@ class Transport {
       errState = err;
     }
     if (!transformed || errState) {
-      callback(errState);
+      if (typeof callback === "function") callback.call(null);
       if (errState) throw errState;
     }
 
-    return this.log(transformed, callback);
+    this.log(transformed, callback);
+    if (typeof callback === "function") callback.call(null);
   }
 
   static create(name, cls) {
